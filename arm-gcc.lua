@@ -3,7 +3,7 @@ toolchain("arm-gcc")
     set_description("ARM Compiler of GCC")
     set_kind("cross")
 
-    on_load(function (toolchain)
+    on_load(function(toolchain)
         if toolchain:is_plat("windows") then
             toolchain:set("toolset", "cc", "arm-none-eabi-gcc.exe")
             toolchain:set("toolset", "ld", "arm-none-eabi-gcc.exe")
@@ -16,11 +16,10 @@ toolchain("arm-gcc")
             toolchain:set("toolset", "as", "arm-none-eabi-gcc")
         end
     end)
-
 toolchain_end()
 
 rule("generate-hex")
-    after_build(function (target)
+    after_build(function(target)
         print("$(env ARM_TOOL)")
         print("after_build: generate hex files")
         local out = target:targetfile() or ""
@@ -45,14 +44,14 @@ rule("generate-hex")
         -- $(Q) $(OBJ_COPY) -O binary $@ $(BUILD_DIR)/$(TARGET).bin
         -- os.exec("qemu-system-arm -M stm32-p103 -nographic -kernel"..bin_out)
     end)
-    after_clean(function (target)
+    after_clean(function(target)
         local gen_fi = "build/" .. target:name()
         os.rm(gen_fi .. ".*")
     end)
 rule_end()
 
 task("qemu")
-    on_run(function ()
+    on_run(function()
         print("Run binary in Qemu!")
         local bin_out = os.files("$(buildir)/*.bin")[1]
         if bin_out then
