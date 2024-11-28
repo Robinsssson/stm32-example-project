@@ -23,7 +23,6 @@ rule("generate-hex")
     after_build(function(target)
         local out = target:targetfile() or ""
         local gen_fi = "build/" .. target:name()
-        print(string.format("%s => %s", out, gen_fi))
 
         -- https://github.com/xmake-io/xmake/discussions/2125
         -- os.exec("arm-none-eabi-objdump -S "..out.." > "..gen_fi..".asm")
