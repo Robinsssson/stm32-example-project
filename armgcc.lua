@@ -21,10 +21,17 @@ function use_toolchain(sdk_path)
 		set_kind("cross")
 		set_description("Stm32 Arm Embedded Compiler")
 		set_sdkdir(sdk_path)
-		set_toolset("cc", "arm-none-eabi-gcc")
-		set_toolset("ld", "arm-none-eabi-gcc")
-		set_toolset("ar", "arm-none-eabi-ar")
-		set_toolset("as", "arm-none-eabi-gcc")
+		if is_plat("windows") then
+			set_toolset("cc", "arm-none-eabi-gcc.exe")
+			set_toolset("ld", "arm-none-eabi-gcc.exe")
+			set_toolset("ar", "arm-none-eabi-ar.exe")
+			set_toolset("as", "arm-none-eabi-gcc.exe")
+		else
+			set_toolset("cc", "arm-none-eabi-gcc")
+			set_toolset("ld", "arm-none-eabi-gcc")
+			set_toolset("ar", "arm-none-eabi-ar")
+			set_toolset("as", "arm-none-eabi-gcc")
+		end
 	toolchain_end()
 	set_toolchains("arm-gcc")
 end
@@ -46,13 +53,24 @@ rule("arm-gcc")
 		local out = target:targetfile() or ""
 		local gen_fi = "build/"..target:name()
 		print(string.format("%s => %s", out, gen_fi))
-		os.exec("arm-none-eabi-objcopy -Obinary "..out.." "..gen_fi..".bin")
-		-- https://github.com/xmake-io/xmake/discussions/2125
-		-- os.exec("arm-none-eabi-objdump -S "..out.." > "..gen_fi..".asm")
-		-- local asm = os.iorun("arm-none-eabi-objdump -S build/cross/cortex-m4/release/minimal-proj")
-		-- io.writefile(gen_fi..".asm", asm)
-		os.execv("arm-none-eabi-objdump", {"-S", out}, {stdout=gen_fi..".asm"})
-		os.exec("arm-none-eabi-objcopy -O ihex "..out.." "..gen_fi..".hex")
+		if is_plat("windows") then
+			os.exec("arm-none-eabi-objcopy.exe -Obinary "..out.." "..gen_fi..".bin")
+			-- https://github.com/xmake-io/xmake/discussions/2125
+			-- os.exec("arm-none-eabi-objdump -S "..out.." > "..gen_fi..".asm")
+			-- local asm = os.iorun("arm-none-eabi-objdump -S build/cross/cortex-m4/release/minimal-proj")
+			-- io.writefile(gen_fi..".asm", asm)
+			os.execv("arm-none-eabi-objdump.exe", {"-S", out}, {stdout=gen_fi..".asm"})
+			os.exec("arm-none-eabi-objcopy.exe -O ihex "..out.." "..gen_fi..".hex")
+		else
+			os.exec("arm-none-eabi-objcopy -Obinary "..out.." "..gen_fi..".bin")
+			-- https://github.com/xmake-io/xmake/discussions/2125
+			-- os.exec("arm-none-eabi-objdump -S "..out.." > "..gen_fi..".asm")
+			-- local asm = os.iorun("arm-none-eabi-objdump -S build/cross/cortex-m4/release/minimal-proj")
+			-- io.writefile(gen_fi..".asm", asm)
+			os.execv("arm-none-eabi-objdump", {"-S", out}, {stdout=gen_fi..".asm"})
+			os.exec("arm-none-eabi-objcopy -O ihex "..out.." "..gen_fi..".hex")
+		end
+		os.mv(out, gen_fi .. ".elf") -- add .elf file
 		--  -I binary
 		-- $(Q) $(OBJ_COPY) -O ihex $@ $(BUILD_DIR)/$(TARGET).hex
 		-- $(Q) $(OBJ_COPY) -O binary $@ $(BUILD_DIR)/$(TARGET).bin
