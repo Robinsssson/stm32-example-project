@@ -5,15 +5,31 @@ set_project("stm32-demo")
 set_plat("cross")
 set_arch("cortex-m4")
 
-includes("armgcc.lua")
-local arm_gcc_installing_path = os.getenv("ARM_GCC_TOOL") or "/Applications/ARM/"
-use_toolchain(arm_gcc_installing_path)
+includes("arm-gcc.lua")
 
 target("minimal-proj")
     set_kind("binary")
     add_files("src/*.c")
-    add_rules("arm-gcc")
-    add_ldflags("-Tsrc/main.ld")
+
+    add_cflags(
+        "-specs=nano.specs", "-mcpu=cortex-m4", "-mthumb",
+        "-mfloat-abi=hard -mfpu=fpv4-sp-d16", 
+        "-fdata-sections -ffunction-sections",
+        "-nostartfiles","-Os"
+    )
+    
+    add_ldflags(
+        "-specs=nano.specs", "-mcpu=cortex-m4", "-mthumb",
+        "-mfloat-abi=hard -mfpu=fpv4-sp-d16", 
+        "-fdata-sections -ffunction-sections",
+        "-nostartfiles","-Os",
+        "-Wl,--gc-sections", 
+        "-Tsrc/main.ld", {force = true}
+    )
+
+    add_links("m", "c", "nosys")
+    add_rules("generate-hex")
+
 
 -- If you want to known more usage about xmake, please see https://xmake.io
 -- Reference Project:
